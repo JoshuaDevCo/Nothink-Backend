@@ -1,14 +1,16 @@
 import { Schema, SchemaFactory, Prop } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import { HydratedDocument, Schema as MongooseSchema } from 'mongoose';
 import { Booster } from '../../booster/entities/booster';
 
 @Schema()
 export class User {
   @Prop()
   telegram_id: string;
+  @Prop({ type: MongooseSchema.Types.Mixed })
+  telegram_details: { username: string };
   @Prop()
   game_id: string;
-  @Prop([{ type: Types.ObjectId, ref: 'Booster' }])
+  @Prop([{ type: MongooseSchema.Types.ObjectId, ref: 'Booster' }])
   boosters: Booster[];
 }
 

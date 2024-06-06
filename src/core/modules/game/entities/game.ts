@@ -9,15 +9,18 @@ export class Game {
   tap_value: number;
   @Prop()
   multiplier: number;
+
   @Prop()
   energy: number;
   @Prop()
   max_energy: number;
+  @Prop({ default: 0 })
+  energy_recharge_time_reduce: number;
 
   @Prop({ default: Date.now })
   created_at: Date;
   @Prop({ default: Date.now })
-  updated_at: string;
+  updated_at: Date;
 }
 
 export type GameDocument = HydratedDocument<Game>;
