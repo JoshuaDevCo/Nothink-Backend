@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Game, gameSchema } from './entities/game';
 import { GameSnapshot, gameSnapshotSchema } from './entities/game.snapshot';
+import { Challenge, challengeSchema } from './entities/challenge';
 import { GameService } from './game.service';
 
 @Module({
@@ -26,6 +27,17 @@ import { GameService } from './game.service';
           mySchema.pre('save', function (next) {
             // if (doc.password) ;
             this.updated_at = new Date();
+            next();
+          });
+          return mySchema;
+        },
+      },
+      {
+        name: Challenge.name,
+        useFactory: () => {
+          const mySchema = challengeSchema;
+          mySchema.pre('save', function (next) {
+            // if (doc.password) ;
             next();
           });
           return mySchema;
