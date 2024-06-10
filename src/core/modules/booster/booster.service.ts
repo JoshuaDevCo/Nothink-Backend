@@ -44,6 +44,9 @@ export class BoosterService {
   getAll() {
     return this.boosterModel.find({});
   }
+  getDailyAll() {
+    return this.boosterModel.find({ type: 'daily' });
+  }
   // when we want to buy a booster
   // when game is staring
 

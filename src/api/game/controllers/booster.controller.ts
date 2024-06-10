@@ -16,6 +16,11 @@ export class ApiGameBoosterController {
     return this.service.getUsersList(userId);
   }
 
+  @Get('daily')
+  handleGetDailyBoosters(@User('telegram_id') userId: string) {
+    return this.service.getDailyList(userId);
+  }
+
   @Post('use/:type')
   handleUseBooster(
     @User('_id') userId: string,

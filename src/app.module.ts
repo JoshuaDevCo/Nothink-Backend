@@ -2,12 +2,18 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CoreModules } from './core/modules';
 import { ApiRouterModules } from './api/router';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(
-      'mongodb+srv://maxim:12evr4r@cluster.8caidnj.mongodb.net/local-no-think?retryWrites=true&w=majority',
-    ),
+    ConfigModule.forRoot(),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.getOrThrow<string>('MONGODB_URI'),
+      }),
+      inject: [ConfigService],
+    }),
     ...CoreModules,
     ...ApiRouterModules,
   ],

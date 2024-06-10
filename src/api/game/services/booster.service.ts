@@ -27,8 +27,33 @@ export class ApiGameBoosterService {
         res[booster.key] = [booster];
       }
     }
+    this.logger.log(res);
     return res;
   }
+
+  async getDailyList(userId: string) {
+    const res: Record<string, unknown[]> = {};
+    const boosters = await this.boosterService.getDailyAll();
+    this.logger.warn(boosters);
+    for (const booster of boosters) {
+      if (res[booster.key]) {
+        res[booster.key].push({
+          ...booster.toObject(),
+          usages: booster.usages?.[userId] || 0,
+        });
+      } else {
+        res[booster.key] = [
+          {
+            ...booster.toObject(),
+            usages: booster.usages?.[userId] || 0,
+          },
+        ];
+      }
+    }
+    this.logger.debug(res);
+    return res;
+  }
+
   async getUsersList(userId: string) {
     const user = await this.userService.findUserById(userId);
 
