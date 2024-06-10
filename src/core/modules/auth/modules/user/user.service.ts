@@ -28,8 +28,8 @@ export class UserService {
       .populate('boosters', null, this.boosterModel);
   }
 
-  findUserByGameId(gameId: string) {
-    return this.userModel.findOne({ gameId });
+  findUserByGameId(game_id: string) {
+    return this.userModel.findOne({ game_id });
   }
 
   findUserByTelegramId(telegram_id: string) {
