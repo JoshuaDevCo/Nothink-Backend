@@ -1,5 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiAuthService } from '../services/api-auth.service';
+import { InitData } from '@tma.js/sdk';
 
 @Controller('')
 export class ApiAuthController {
