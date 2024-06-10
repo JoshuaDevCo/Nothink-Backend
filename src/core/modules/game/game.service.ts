@@ -30,6 +30,14 @@ export class GameService {
     return this.gameModel.collection;
   }
 
+  addScore(gameId: String, reward: number) {
+    return this.gameModel.findOneAndUpdate(
+      { gameId },
+      { $inc: { score: reward } },
+      { new: true },
+    );
+  }
+
   createGame(data: { score: number; clicks: number }) {
     const instance = new this.gameModel({
       energy: 100,

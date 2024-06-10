@@ -5,7 +5,7 @@ import { User } from '../../auth/entities/user';
 @Schema()
 export class Challenge {
   @Prop()
-  type: number;
+  type: string;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
   user_id: User;
