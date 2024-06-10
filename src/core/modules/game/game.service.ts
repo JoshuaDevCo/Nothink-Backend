@@ -26,6 +26,10 @@ export class GameService {
     return this.gameModel.find({}).select('score');
   }
 
+  getCollection() {
+    return this.gameModel.collection;
+  }
+
   createGame(data: { score: number; clicks: number }) {
     const instance = new this.gameModel({
       energy: 100,

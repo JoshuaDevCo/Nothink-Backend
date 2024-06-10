@@ -27,6 +27,11 @@ export class UserService {
       .findById(userId)
       .populate('boosters', null, this.boosterModel);
   }
+
+  findUserByGameId(game_id: string) {
+    return this.userModel.findOne({ game_id });
+  }
+
   findUserByTelegramId(telegram_id: string) {
     return this.userModel.findOne({ telegram_id });
   }
