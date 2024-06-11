@@ -30,9 +30,9 @@ export class GameService {
     return this.gameModel.collection;
   }
 
-  addScore(gameId: String, reward: number) {
+  addScore(_id: String, reward: number) {
     return this.gameModel.findOneAndUpdate(
-      { gameId },
+      { _id },
       { $inc: { score: reward } },
       { new: true },
     );

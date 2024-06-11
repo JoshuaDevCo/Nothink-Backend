@@ -36,42 +36,62 @@ export class ApiChallengeService implements OnModuleInit {
       type: 'collect-10000',
       reward: '2000',
     },
+    {
+      threshold: 20000,
+      type: 'collect-10000',
+      reward: '2000',
+    },
   ] as const;
 
   async watchGameCollection() {
     const changeStream = this.gameService.getCollection().watch();
 
     changeStream.on('change', async (update) => {
-      console.log('Received Changes: ', update);
-      const score = update['updateDescription']['updatedFields']['score'];
+      // Getting the updated score field.
+      if (update.operationType != 'update') return;
+      const score = update.updateDescription.updatedFields['score'];
+
+      // Getting game and user information.
+      const gameId = update.documentKey._id.toString();
+      const user = await this.userService.findUserByGameId(gameId);
+      if (user == undefined) return;
+
+      // Getting which challenges can be completed.
+      let detectedChallengeList = [],
+        completeChallengeTypes = [];
       if (score != undefined) {
-        const completeChallengeList = this.CHALLENGES.filter(
+        detectedChallengeList = this.CHALLENGES.filter(
           (challenge) =>
             challenge.type.includes('collect-') && score >= challenge.threshold,
         );
-        if (completeChallengeList == undefined) return;
-        const gameId = update['documentKey']['_id'];
-        const user = await this.userService.findUserByGameId(gameId);
-        if (user == undefined) return;
-        console.log(user.id);
-        const completeChallenges =
-          await this.challengeService.findChallengeByUserId(user.id);
-        const completeChallengeTypes = completeChallenges.map(
-          (challenge) => challenge.type,
-        );
-        console.log(completeChallengeList);
-        console.log(completeChallengeTypes);
-        let rewardSum = 0;
-        completeChallengeList.forEach((challenge) => {
-          if (!completeChallengeTypes.includes(challenge.type)) {
-            console.log(challenge.reward, Number(challenge.reward));
-            rewardSum += Number(challenge.reward);
-            this.challengeService.addCompleteChallenge(user.id, challenge.type);
-          }
-        });
-        console.log(rewardSum);
-        console.log(await this.gameService.addScore(gameId, rewardSum));
-        // game.updateOne({ score: score + completeChallenge.reward });
+      }
+
+      // Getting the list of challengs that the user have completed.
+      const completeChallenges =
+        await this.challengeService.findChallengeByUserId(user.id);
+      completeChallengeTypes = completeChallenges.map(
+        (challenge) => challenge.type,
+      );
+
+      // Filtering out new challenges and getting the reward sum of it.
+      let rewardSum = 0;
+      for (let i = 0; i < detectedChallengeList.length; i++) {
+        const challenge = detectedChallengeList[i];
+        if (!completeChallengeTypes.includes(challenge.type)) {
+          if (challenge.type == undefined) return;
+          rewardSum += Number(challenge.reward);
+          await this.challengeService.addCompleteChallenge(
+            user.id,
+            challenge.type,
+          );
+          console.log(`Challenge complete: ${challenge.type}`);
+        }
+      }
+
+      // Giving reward.
+      if (rewardSum > 0) {
+        await this.gameService.addScore(gameId, rewardSum);
+        console.log(`Reward given: ${rewardSum}`);
       }
     });
   }
