@@ -54,12 +54,12 @@ export class ApiChallengeService implements OnModuleInit {
       // Getting game and user information.
       const gameId = update.documentKey._id.toString();
       const user = await this.userService.findUserByGameId(gameId);
-      if (user == undefined) return;
+      if (!user) return;
 
       // Getting which challenges can be completed.
       let detectedChallengeList = [],
         completeChallengeTypes = [];
-      if (score != undefined) {
+      if (!score) {
         detectedChallengeList = this.CHALLENGES.filter(
           (challenge) =>
             challenge.type.includes('collect-') && score >= challenge.threshold,
@@ -78,7 +78,7 @@ export class ApiChallengeService implements OnModuleInit {
       for (let i = 0; i < detectedChallengeList.length; i++) {
         const challenge = detectedChallengeList[i];
         if (!completeChallengeTypes.includes(challenge.type)) {
-          if (challenge.type == undefined) return;
+          if (!challenge.type) return;
           rewardSum += Number(challenge.reward);
           await this.challengeService.addCompleteChallenge(
             user.id,
