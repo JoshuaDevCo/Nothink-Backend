@@ -6,7 +6,7 @@ export class Booster {
   @Prop({ enum: ['daily', 'paid'] })
   type: string;
 
-  @Prop({ type: MongooseSchema.Types.Mixed })
+  @Prop({ type: MongooseSchema.Types.Mixed, default: {} })
   usages: Record<string, number>;
 
   @Prop({ default: -1 })

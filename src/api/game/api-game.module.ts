@@ -7,7 +7,7 @@ import { GameModule } from 'src/core/modules/game/game.module';
 import { UserModule } from 'src/core/modules/auth/modules/user/user.module';
 import { ApiGameStateController } from './controllers/state.controller';
 @Module({
-  imports: [BoosterModule, GameModule, UserModule],
+  imports: [BoosterModule, GameModule],
   controllers: [ApiGameBoosterController, ApiGameStateController],
   providers: [ApiGameBoosterService, ApiGameStateService],
 })

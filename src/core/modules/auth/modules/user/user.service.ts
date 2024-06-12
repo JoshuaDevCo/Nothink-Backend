@@ -69,4 +69,6 @@ export class UserService {
       },
     ]);
   }
+
+  // async getLastActiveIn80mins() {}
 }

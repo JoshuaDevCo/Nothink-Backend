@@ -109,8 +109,17 @@ export class ApiGameBoosterService {
       if (!nextBooster.usages) {
         nextBooster.usages = {};
       }
-      nextBooster.usages[user.telegram_id] = oldUsages + 1;
-      nextBooster.save();
+      if (nextBooster.usages[user.telegram_id] + 1 > nextBooster.max_usages)
+        return false;
+      nextBooster.usages = {
+        ...nextBooster.usages,
+        [user.telegram_id]: oldUsages + 1,
+      };
+      this.logger.log('Usages');
+      this.logger.log(nextBooster);
+      this.logger.log(nextBooster.usages[user.telegram_id]);
+      await nextBooster.save();
+      this.logger.debug('saved');
       if (type === 'lotus-energy') {
         game.energy = game.max_energy;
         await game.save();
