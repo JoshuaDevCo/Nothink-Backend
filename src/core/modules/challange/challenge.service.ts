@@ -1,32 +1,22 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { Challenge } from './enrtities';
 import { Model } from 'mongoose';
-import { Game } from 'src/core/modules/game/entities/game';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class ChallengeService implements OnModuleInit {
   constructor(
-    @InjectModel(Game.name)
-    private readonly gameModel: Model<Game>,
+    @InjectModel(Challenge.name)
+    private readonly challengeModel: Model<Challenge>,
   ) {}
 
-  onModuleInit() {
-    this.watchGameCollection();
+  onModuleInit() {}
+
+  findChallengeByUserId(user_id: string) {
+    return this.challengeModel.find({ user_id });
   }
 
-  public CHALLENGES = [
-    {
-      threshold: 5000,
-      type: 'collect-5000',
-      reward: '1000',
-    },
-  ];
-
-  async watchGameCollection() {
-    const changeStream = this.gameModel.collection.watch();
-
-    changeStream.on('change', (next) => {
-      console.log('Received Changes: ', next);
-    });
+  addCompleteChallenge(user_id: string, type: string) {
+    return this.challengeModel.insertMany({ user_id, type });
   }
 }
