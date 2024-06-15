@@ -27,14 +27,14 @@ export class ApiGameBoosterService {
         res[booster.key] = [booster];
       }
     }
-    this.logger.log(res);
+    // this.logger.log(res);
     return res;
   }
 
   async getDailyList(userId: string) {
     const res: Record<string, unknown[]> = {};
     const boosters = await this.boosterService.getDailyAll();
-    this.logger.warn(boosters);
+    // this.logger.warn(boosters);
     for (const booster of boosters) {
       if (res[booster.key]) {
         res[booster.key].push({
@@ -50,7 +50,7 @@ export class ApiGameBoosterService {
         ];
       }
     }
-    this.logger.debug(res);
+    // this.logger.debug(res);
     return res;
   }
 
@@ -72,7 +72,9 @@ export class ApiGameBoosterService {
   // type [bought by type] -> find max level of booster
   async update(
     userId: string,
-    type: (typeof this.boosterService.TYPES)['paid' | 'daily'][number],
+    type:
+      | (typeof this.boosterService.TYPES)['paid' | 'daily'][number]
+      | 'autotapper',
   ): Promise<boolean> {
     const user = await this.userService.findUserById(userId);
     if (!user) throw new NotFoundException('User not found');
@@ -90,7 +92,7 @@ export class ApiGameBoosterService {
       type,
       boughtBoosters.length === 0 ? 0 : level,
     );
-    this.logger.debug(nextBooster);
+    // this.logger.debug(nextBooster);
 
     const game = await this.gameService.findGame(user.game_id);
     if (!game) {
@@ -98,7 +100,7 @@ export class ApiGameBoosterService {
     }
 
     if (isDaily) {
-      this.logger.log(type);
+      // this.logger.log(type);
       // reduce usage amount
       const oldUsages = nextBooster.usages
         ? nextBooster.usages[user.telegram_id] || 0
@@ -115,9 +117,9 @@ export class ApiGameBoosterService {
         ...nextBooster.usages,
         [user.telegram_id]: oldUsages + 1,
       };
-      this.logger.log('Usages');
-      this.logger.log(nextBooster);
-      this.logger.log(nextBooster.usages[user.telegram_id]);
+      // this.logger.log('Usages');
+      // this.logger.log(nextBooster);
+      // this.logger.log(nextBooster.usages[user.telegram_id]);
       await nextBooster.save();
       this.logger.debug('saved');
       if (type === 'lotus-energy') {

@@ -5,8 +5,15 @@ import { ChallengeService } from './challenge.service';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: Challenge.name, schema: challengeSchema },
+    MongooseModule.forFeatureAsync([
+      {
+        name: Challenge.name,
+        useFactory: () => {
+          const mySchema = challengeSchema;
+          mySchema.index({ user_id: 1, type: 1 }, { unique: true });
+          return mySchema;
+        },
+      },
     ]),
   ],
   providers: [ChallengeService],

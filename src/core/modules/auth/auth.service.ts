@@ -19,7 +19,7 @@ export class AuthService {
     try {
       const payload = verify(jwt, this.secret);
       if (typeof payload === 'string') throw new Error('Bad credits');
-      this.logger.log(payload);
+      // this.logger.log(payload);
       const user = payload;
       return user;
     } catch (error) {

@@ -15,12 +15,7 @@ export class BoosterService {
 
   public TYPES = {
     daily: ['zen-power', 'lotus-energy'],
-    paid: [
-      'multitap',
-      'energy-limit-increase',
-      'energy-recharge-decrease',
-      'autotapper',
-    ],
+    paid: ['multitap', 'energy-limit-increase', 'energy-recharge-decrease'],
   } as const;
   public VALUES = {
     paid: {
@@ -103,6 +98,11 @@ export class BoosterService {
     await Promise.all([
       ...daily.map((d) => d.save()),
       ...paid.map((d) => d.save()),
+      new this.boosterModel({
+        type: 'paid',
+        key: 'autotapper',
+        level: 1,
+      }).save(),
     ]);
   }
 }

@@ -11,6 +11,7 @@ export class ApiGameStateController {
   constructor(private readonly service: ApiGameStateService) {}
   @Get('latest')
   handleGetLatest(@User('_id') userId: string) {
+    this.logger.error('Receiving latest');
     return this.service.getLatest(userId);
   }
 

@@ -13,26 +13,27 @@ export class ApiAuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  async sign(data: {
-    user: any;
-    query_id: string;
-    auth_date: number;
-    hash: string;
-  }) {
+  async sign(initData: any, data: { user: any }) {
     try {
-      const initDataString =
-        `query_id=${data.query_id}` +
-        `&user=${data.user}` +
-        `&auth_date=${data.auth_date}` +
-        `&hash=${data.hash}`;
+      // if (!('query_id' in data)) {
+      //   initData =
+      //     `user=${data.user}` +
+      //     `&chat_instance=${data.chatInstance}` +
+      //     `&chat_type=${data.chatType}` +
+      //     `&auth_date=${new Date(data.authDate).getTime()}` +
+      //     `&hash=${data.hash}`;
+      // } else {
+      //   initData =
+      //     `query_id=${data.query_id}` +
+      //     `&user=${data.user}` +
+      //     `&auth_date=${new Date(data.authDate).getTime()}` +
+      //     `&hash=${data.hash}`;
+      // }
       if (!this.configService.get('AUTH_BYPASS')) {
-        validate(
-          initDataString,
-          this.configService.getOrThrow('TELEGRAM_TOKEN'),
-        );
+        validate(initData, this.configService.getOrThrow('TELEGRAM_TOKEN'));
       }
       this.logger.log('Valid');
-      const parsed = JSON.parse(data.user);
+      const parsed = data.user;
       // { id: "123123" }
       this.logger.log('ID:', parsed.id);
       let user = await this.userService.findUserByTelegramId(parsed.id);
@@ -41,7 +42,7 @@ export class ApiAuthService {
       }
       user.telegram_details = parsed;
       await user.save();
-      return this.authService.sign(user.toObject());
+      return { payload: this.authService.sign(user.toObject()), user };
     } catch (error) {
       this.logger.error(error);
       return null;

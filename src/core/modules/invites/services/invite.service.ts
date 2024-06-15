@@ -23,10 +23,22 @@ export class InviteService {
       accepted_by: [],
     }).save();
   }
+
+  async getInvited(userId: string): Promise<string[]> {
+    const invite = await this.inviteModel.findOne({ from: userId });
+    return invite.accepted_by.map((id) => id.toString());
+  }
   async acceptInvite(userId: string, inviteId: string) {
     const invite = await this.inviteModel.findById(inviteId);
     if (!invite) throw new Error('Invite not found');
+    if (userId === invite.from.toString())
+      throw new Error('Cannot invite your self');
     invite.accepted_by.push(userId);
     return invite.save();
+  }
+  async getUserIdByInviteId(inviteId: string) {
+    const invite = await this.inviteModel.findById(inviteId);
+    if (!invite) throw new Error('Invite not found');
+    return invite.from;
   }
 }

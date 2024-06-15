@@ -9,6 +9,9 @@ export class Challenge {
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
   user_id: User;
+
+  @Prop({ default: false })
+  claimed: boolean;
 }
 
 export type ChallengeDocument = HydratedDocument<Challenge>;

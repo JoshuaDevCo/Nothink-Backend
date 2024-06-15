@@ -1,70 +1,48 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { GameService } from 'src/core/modules/game/game.service';
 import { UserService } from 'src/core/modules/auth/modules/user/user.service';
 import { ChallengeService } from 'src/core/modules/challange/challenge.service';
+import { IChallange } from '../types/challange.types';
+import { CHALLENGES } from '../constants/challenges';
 
 @Injectable()
-export class ApiChallengeService implements OnModuleInit {
+export class WatchScoreChallengeService {
+  private logger = new Logger(WatchScoreChallengeService.name, {
+    timestamp: false,
+  });
   constructor(
     private readonly gameService: GameService,
     private readonly userService: UserService,
     private readonly challengeService: ChallengeService,
   ) {}
 
-  onModuleInit() {
-    this.watchGameCollection();
-  }
-
-  public CHALLENGES = [
-    {
-      threshold: 2000,
-      type: 'collect-2000',
-      reward: '250',
-    },
-    {
-      threshold: 3000,
-      type: 'collect-2500',
-      reward: '500',
-    },
-    {
-      threshold: 5000,
-      type: 'collect-5000',
-      reward: '1000',
-    },
-    {
-      threshold: 10000,
-      type: 'collect-10000',
-      reward: '2000',
-    },
-    {
-      threshold: 20000,
-      type: 'collect-10000',
-      reward: '2000',
-    },
-  ] as const;
-
-  async watchGameCollection() {
+  async watch() {
+    this.logger.debug('Start watching');
     const changeStream = this.gameService.getCollection().watch();
 
     changeStream.on('change', async (update) => {
       // Getting the updated score field.
+      this.logger.debug(update.operationType);
       if (update.operationType != 'update') return;
       const score = update.updateDescription.updatedFields['score'];
+      this.logger.warn(score, update.documentKey._id);
 
       // Getting game and user information.
       const gameId = update.documentKey._id.toString();
       const user = await this.userService.findUserByGameId(gameId);
+      // this.logger.debug(`User found: ${!user}`);
       if (!user) return;
 
       // Getting which challenges can be completed.
       let detectedChallengeList = [],
         completeChallengeTypes = [];
-      if (!score) {
-        detectedChallengeList = this.CHALLENGES.filter(
+      if (score) {
+        detectedChallengeList = CHALLENGES.score.filter(
           (challenge) =>
             challenge.type.includes('collect-') && score >= challenge.threshold,
         );
       }
+      // this.logger.debug(detectedChallengeList);
 
       // Getting the list of challengs that the user have completed.
       const completeChallenges =
@@ -74,25 +52,21 @@ export class ApiChallengeService implements OnModuleInit {
       );
 
       // Filtering out new challenges and getting the reward sum of it.
-      let rewardSum = 0;
-      for (let i = 0; i < detectedChallengeList.length; i++) {
-        const challenge = detectedChallengeList[i];
+      // Won't work properly dueto await in for loop
+      for (const challenge of detectedChallengeList) {
         if (!completeChallengeTypes.includes(challenge.type)) {
           if (!challenge.type) return;
-          rewardSum += Number(challenge.reward);
           await this.challengeService.addCompleteChallenge(
             user.id,
             challenge.type,
           );
-          console.log(`Challenge complete: ${challenge.type}`);
+          this.logger.warn(`Challenge complete: ${challenge.type}`);
         }
       }
-
-      // Giving reward.
-      if (rewardSum > 0) {
-        await this.gameService.addScore(gameId, rewardSum);
-        console.log(`Reward given: ${rewardSum}`);
-      }
     });
+  }
+
+  public getCompleted(userId: string) {
+    return this.challengeService.getCompletedChallanges(userId);
   }
 }

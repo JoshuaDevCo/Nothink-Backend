@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { ObjectId } from 'bson';
+import { Model, Types } from 'mongoose';
 import { User } from '../../entities/user';
 import { Game } from 'src/core/modules/game/entities/game';
 import { Booster } from 'src/core/modules/booster';
@@ -10,7 +9,6 @@ import { Booster } from 'src/core/modules/booster';
 export class UserService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
-    @InjectModel(Game.name) private readonly gameModel: Model<Game>,
     @InjectModel(Booster.name) private readonly boosterModel: Model<Booster>,
   ) {}
 
@@ -41,6 +39,95 @@ export class UserService {
 
   async getRankTable() {
     return this.userModel.aggregate([
+      {
+        $addFields: {
+          gameIdObjectId: { $toObjectId: '$game_id' },
+        },
+      },
+      {
+        $lookup: {
+          from: 'games',
+          localField: 'gameIdObjectId',
+          foreignField: '_id',
+          as: 'game',
+        },
+      },
+      {
+        $unwind: '$game',
+      },
+      {
+        $sort: { 'game.score': -1 }, // sort in descending order
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          game_id: 1,
+          telegram_details: 1,
+          score: '$game.score',
+        },
+      },
+      {
+        $limit: 100,
+      },
+    ]);
+  }
+
+  async getUserPlacement(userId: string) {
+    return this.userModel.aggregate([
+      {
+        $addFields: {
+          gameIdObjectId: { $toObjectId: '$game_id' },
+        },
+      },
+      {
+        $lookup: {
+          from: 'games',
+          localField: 'gameIdObjectId',
+          foreignField: '_id',
+          as: 'game',
+        },
+      },
+      {
+        $unwind: '$game',
+      },
+      {
+        $sort: { 'game.score': -1 }, // sort in descending order
+      },
+      {
+        $setWindowFields: {
+          partitionBy: 'userId',
+          sortBy: { 'game.score': -1 },
+          output: {
+            rank: { $rank: {} },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          game_id: 1,
+          telegram_details: 1,
+          score: '$game.score',
+          rank: 1,
+        },
+      },
+      {
+        $match: {
+          _id: new Types.ObjectId(userId),
+        },
+      },
+    ]);
+  }
+
+  async getInvidedRankTable(ids: string[]) {
+    return this.userModel.aggregate([
+      {
+        $match: {
+          _id: { $in: ids.map((id) => new Types.ObjectId(id)) }, // фильтрация по ID пользователей
+        },
+      },
       {
         $addFields: {
           gameIdObjectId: { $toObjectId: '$game_id' },
