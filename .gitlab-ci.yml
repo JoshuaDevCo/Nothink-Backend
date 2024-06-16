@@ -1,0 +1,63 @@
+variables:
+  IMAGE_NAME: gcr.io/tidy-federation-332618/nothink-backend:staging
+  RUN_ARGS: -p 3000:3000
+stages:
+  - build-image
+  - deploy
+  - rollback
+
+build:
+  stage: build-image
+  script:
+    - echo $GCLOUD_SERVICE_KEY | base64 -d > gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file=gcloud-service-key.json
+    # - echo gcloud-service-key.json | docker login -u _json_key --password-stdin https://gcr.io
+    - rm -f .env
+    - echo VITE_PUBLIC_API_URL=$VITE_PUBLIC_API_URL >> .env
+    - echo MONGODB_URI=$MONGODB_URI >> .env
+    - echo TELEGRAM_TOKEN=$TELEGRAM_TOKEN >> .env
+    - cat .env
+    - docker build -t $IMAGE_NAME .
+    - docker push $IMAGE_NAME
+  only:
+    - main
+
+deploy:
+  variables:
+    SERVER_IP: 35.246.133.24
+  stage: deploy
+  script:
+    - chmod og= $STAGING_SSH_KEY
+    - echo $GCLOUD_SERVICE_KEY | base64 -d > gcloud-service-key.json
+    - scp -i $STAGING_SSH_KEY -o StrictHostKeyChecking=no gcloud-service-key.json staging@$SERVER_IP:/tmp/gcloud-service-key.json
+    - ssh -i $STAGING_SSH_KEY -o StrictHostKeyChecking=no staging@$SERVER_IP "cat /tmp/gcloud-service-key.json | docker login -u _json_key --password-stdin https://gcr.io"
+    # - ssh -i $STAGING_SSH_KEY -o StrictHostKeyChecking=no staging@10.156.0.10 "gcloud auth activate-service-account --key-file=/tmp/gcloud-service-key.json"
+    # - ssh -i $STAGING_SSH_KEY -o StrictHostKeyChecking=no staging@10.156.0.10 "rm keys.json"
+    - ssh -i $STAGING_SSH_KEY -o StrictHostKeyChecking=no staging@$SERVER_IP "docker stop nothink-backend-staging || true"
+    - ssh -i $STAGING_SSH_KEY -o StrictHostKeyChecking=no staging@$SERVER_IP "docker rm nothink-backend-staging || true"
+    - ssh -i $STAGING_SSH_KEY -o StrictHostKeyChecking=no staging@$SERVER_IP "docker pull ${IMAGE_NAME}"
+    - ssh -i $STAGING_SSH_KEY -o StrictHostKeyChecking=no staging@$SERVER_IP "docker run -d ${RUN_ARGS} --name nothink-backend-staging ${IMAGE_NAME}"
+    # Тут может быть скрипт для SSH и запуска Docker контейнера на целевом сервере
+  only:
+    - main
+
+deploy_production:
+  variables:
+    SERVER_IP: 35.246.133.24
+    RUN_ARGS: -p 3001:3000
+  stage: deploy
+  script:
+    - chmod og= $SSH_KEY
+    - echo $GCLOUD_SERVICE_KEY | base64 -d > gcloud-service-key.json
+    - scp -i $SSH_KEY -o StrictHostKeyChecking=no gcloud-service-key.json staging@$SERVER_IP:/tmp/gcloud-service-key.json
+    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no staging@$SERVER_IP "cat /tmp/gcloud-service-key.json | docker login -u _json_key --password-stdin https://gcr.io"
+    # - ssh -i $STAGING_SSH_KEY -o StrictHostKeyChecking=no staging@10.156.0.10 "gcloud auth activate-service-account --key-file=/tmp/gcloud-service-key.json"
+    # - ssh -i $STAGING_SSH_KEY -o StrictHostKeyChecking=no staging@10.156.0.10 "rm keys.json"
+    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no staging@$SERVER_IP "docker stop nothink-backend-production || true"
+    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no staging@$SERVER_IP "docker rm nothink-backend-production || true"
+    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no staging@$SERVER_IP "docker pull ${IMAGE_NAME}"
+    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no staging@$SERVER_IP "docker run -d ${RUN_ARGS} --name nothink-backend-production ${IMAGE_NAME}"
+    # Тут может быть скрипт для SSH и запуска Docker контейнера на целевом сервере
+  only:
+    - main
+  when: manual
