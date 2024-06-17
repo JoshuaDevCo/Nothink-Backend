@@ -7,6 +7,7 @@ import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants';
 import { UserDocument } from 'src/core/modules/auth/entities/user';
 import { GameDocument } from 'src/core/modules/game/entities/game';
 import { ConfigService } from '@nestjs/config';
+import { InviteService } from 'src/core/modules/invites/services/invite.service';
 
 @Injectable()
 export class ApiGameStateService {
@@ -16,6 +17,7 @@ export class ApiGameStateService {
     private readonly gameService: GameService,
     private readonly userService: UserService,
     private readonly boosterService: BoosterService,
+    private readonly inviteService: InviteService,
     private readonly configService: ConfigService,
   ) {
     this.autotapperInactivityPeriod = Number(
@@ -114,6 +116,7 @@ export class ApiGameStateService {
     if (!user) throw new NotFoundException('User not found');
     const game = await this.gameService.findGame(user.game_id);
     // this.logger.debug(game);
+
     if (!game) {
       return {
         score: 100,
@@ -125,7 +128,7 @@ export class ApiGameStateService {
       };
     }
     this.logger.warn(Date.now() - new Date(game.updated_at).getTime());
-
+    const claimed = await this.inviteService.claim(userId);
     // #region Multitap Booster check
     game.multiplier = this.applyMultitap(user);
     // #region Enegry Limit Increase
@@ -151,6 +154,10 @@ export class ApiGameStateService {
     this.logger.log('----------');
     game.score += autotapped;
     await game.save();
-    return { ...game.toObject(), auto_tapped: autotapped };
+    return {
+      ...game.toObject(),
+      auto_tapped: autotapped,
+      invites_claimed: claimed,
+    };
   }
 }

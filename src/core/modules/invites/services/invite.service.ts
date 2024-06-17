@@ -41,4 +41,13 @@ export class InviteService {
     if (!invite) throw new Error('Invite not found');
     return invite.from;
   }
+
+  async claim(userId: string) {
+    const invite = await this.inviteModel.findOne({ from: userId });
+    if (!invite) return 0;
+    const diff = invite.accepted_by.length - (invite.claimed || 0);
+    invite.claimed = invite.accepted_by.length;
+    await invite.save();
+    return diff;
+  }
 }

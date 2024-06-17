@@ -8,6 +8,9 @@ export class Invite {
 
   @Prop([{ type: MongooseSchema.Types.ObjectId, ref: 'User' }])
   accepted_by: string[];
+
+  @Prop({ default: 0 })
+  claimed: number;
 }
 
 export type InviteDocument = HydratedDocument<Invite>;
