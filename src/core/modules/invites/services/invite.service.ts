@@ -29,7 +29,10 @@ export class InviteService {
     return invite.accepted_by.map((id) => id.toString());
   }
   async acceptInvite(userId: string, inviteId: string) {
-    const invite = await this.inviteModel.findById(inviteId);
+    const invite = await this.inviteModel.findOne({
+      _id: inviteId,
+      accepted_by: userId,
+    });
     if (!invite) throw new Error('Invite not found');
     if (userId === invite.from.toString())
       throw new Error('Cannot invite your self');

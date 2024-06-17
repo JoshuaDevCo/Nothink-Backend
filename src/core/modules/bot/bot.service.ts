@@ -31,9 +31,7 @@ export class BotService implements OnModuleInit {
             [
               {
                 text: 'Play',
-                web_app: {
-                  url: 'https://t.me/no_think_coin_bot/startapp',
-                },
+                url: 'https://t.me/nuah_wallet_staging_bot/clicker',
               },
             ],
             // [{ text: 'Read the rules', callback_data: 'Rules' }],
