@@ -6,7 +6,8 @@ import { INVITE_TEXT } from './bot.constants';
 const WELCOME_TEXT = `*Welcome to NO\\-THINK COIN:*
 
 The Future of Easy Earning\\!
-Don’t miss out on this exciting opportunity\\! NO\\-COIN is the new digital coin designed for everyone\\. No complex setups, no investments needed \\- just pure, simple fun\\.
+Don’t miss out on this exciting opportunity\\!
+NO\\-THINK COIN is the new digital coin designed for everyone\\. No complex setups, no investments needed \\- just pure, simple fun\\.
 
 *How to Get Started*:
 1\\. *Invite Friends*: Share the joy and invite your friends\\. Both of you earn 1\\.000 coins when they join using your invite link\\!
@@ -31,7 +32,7 @@ export class BotService implements OnModuleInit {
             [
               {
                 text: 'Play',
-                url: 'https://t.me/nuah_wallet_staging_bot/clicker',
+                url: 'https://t.me/no_think_coin_bot/startapp',
               },
             ],
             // [{ text: 'Read the rules', callback_data: 'Rules' }],
