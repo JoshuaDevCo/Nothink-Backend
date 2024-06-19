@@ -13,8 +13,15 @@ import { ApiBoosterCron } from './crons/booster.cron';
 import { ApiGameChallengeController } from './controllers/challange.controller';
 import { InviteModule } from 'src/core/modules/invites/invite.module';
 import { ApiGameChallangeService } from './services/challange.service';
+import { InvoiceModule } from 'src/core/modules/invoice/invoice.module';
 @Module({
-  imports: [BoosterModule, GameModule, ChallengeModule, InviteModule],
+  imports: [
+    BoosterModule,
+    GameModule,
+    ChallengeModule,
+    InviteModule,
+    InvoiceModule,
+  ],
   controllers: [
     ApiGameBoosterController,
     ApiGameStateController,

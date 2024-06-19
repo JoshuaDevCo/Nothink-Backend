@@ -7,6 +7,47 @@ import {
 import { UserService } from 'src/core/modules/auth/modules/user/user.service';
 import { BoosterService } from 'src/core/modules/booster';
 import { GameService } from 'src/core/modules/game/game.service';
+import { InvoiceService } from 'src/core/modules/invoice/invoice.service';
+
+const TonWeb = require('tonweb');
+
+const provider = new TonWeb.HttpProvider(
+  'https://toncenter.com/api/v2/jsonRPC',
+  {
+    apiKey: '0da4c82a9da886e1df7729787a1cec5edc96ff80a04d9d19c32f44ad87376f2d',
+  },
+);
+
+async function getNewlyPaidAmount(
+  invoiceService: InvoiceService,
+  telegram_id: string,
+  nextBoosterPrice: number,
+) {
+  const addr_contract = 'UQAyz0PWZt2Zb5qmOunVzaKBYhGBa366QBgZdBLZNK7UDvBz';
+  try {
+    let txs = await provider.getTransactions(addr_contract);
+    let spentInvoices = (
+      await invoiceService.findInvoicesByTelegramId(telegram_id)
+    ).map((invoice) => invoice.tx_id);
+    txs = txs.filter(
+      (tx) =>
+        tx.in_msg.value > 0 &&
+        tx.in_msg.message == telegram_id &&
+        !spentInvoices.includes(tx.transaction_id.hash),
+    );
+    let sumPaid = 0;
+    txs.forEach(async (tx) => {
+      sumPaid += tx.in_msg.value / 1000000000;
+    });
+    if (sumPaid >= nextBoosterPrice)
+      txs.forEach(async (tx) => {
+        await invoiceService.addInvoice(telegram_id, tx.transaction_id.hash);
+      });
+    return sumPaid;
+  } catch (error) {
+    console.error('Error fetching transaction:', error.message);
+  }
+}
 
 @Injectable()
 export class ApiGameBoosterService {
@@ -15,6 +56,7 @@ export class ApiGameBoosterService {
     private readonly boosterService: BoosterService,
     private readonly userService: UserService,
     private readonly gameService: GameService,
+    private readonly invoiceService: InvoiceService,
   ) {}
 
   async getList() {
@@ -128,11 +170,23 @@ export class ApiGameBoosterService {
       }
       return true;
     }
-    if (game.score < nextBooster.price) {
-      throw new Error('Not enought balance');
+    if (nextBooster.denom == 'nothink') {
+      if (game.score < nextBooster.price) {
+        throw new Error('Not enought balance');
+      }
+      game.score -= nextBooster.price || 0;
+      user.boosters.push(nextBooster);
+    } else if (nextBooster.denom == 'ton') {
+      let timeout = 10;
+      const tonAmount = await getNewlyPaidAmount(
+        this.invoiceService,
+        user.telegram_id,
+        nextBooster.price,
+      );
+      if (tonAmount >= nextBooster.price) {
+        user.boosters.push(nextBooster);
+      }
     }
-    game.score -= nextBooster.price || 0;
-    user.boosters.push(nextBooster);
     await game.save();
     await user.save();
     return false;
