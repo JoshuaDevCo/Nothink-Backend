@@ -177,7 +177,6 @@ export class ApiGameBoosterService {
       game.score -= nextBooster.price || 0;
       user.boosters.push(nextBooster);
     } else if (nextBooster.denom == 'ton') {
-      let timeout = 10;
       const tonAmount = await getNewlyPaidAmount(
         this.invoiceService,
         user.telegram_id,
