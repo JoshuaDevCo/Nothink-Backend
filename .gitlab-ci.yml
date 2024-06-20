@@ -13,7 +13,9 @@ build:
     - gcloud auth activate-service-account --key-file=gcloud-service-key.json
     # - echo gcloud-service-key.json | docker login -u _json_key --password-stdin https://gcr.io
     - rm -f .env
-    - echo VITE_PUBLIC_API_URL=$VITE_PUBLIC_API_URL >> .env
+    - echo TON_NETWORK_PROVIDER_URL=$TON_NETWORK_PROVIDER_URL >> .env
+    - echo TON_NETWORK_TOKEN=$TON_NETWORK_TOKEN >> .env
+    - echo TON_NETWORK_RECEIVER_ADDRESS=$TON_NETWORK_RECEIVER_ADDRESS >> .env
     - echo MONGODB_URI=$MONGODB_URI >> .env
     - echo TELEGRAM_TOKEN=$TELEGRAM_TOKEN >> .env
     - cat .env

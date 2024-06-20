@@ -4,60 +4,69 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { UserService } from 'src/core/modules/auth/modules/user/user.service';
 import { BoosterService } from 'src/core/modules/booster';
 import { GameService } from 'src/core/modules/game/game.service';
 import { InvoiceService } from 'src/core/modules/invoice/invoice.service';
+// import TonWeb from 'tonweb';
+import { HttpProvider } from 'tonweb/dist/types/providers/http-provider';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const TonWeb = require('tonweb');
-
-const provider = new TonWeb.HttpProvider(
-  'https://toncenter.com/api/v2/jsonRPC',
-  {
-    apiKey: '0da4c82a9da886e1df7729787a1cec5edc96ff80a04d9d19c32f44ad87376f2d',
-  },
-);
-
-async function getNewlyPaidAmount(
-  invoiceService: InvoiceService,
-  telegram_id: string,
-  nextBoosterPrice: number,
-) {
-  const addr_contract = 'UQAyz0PWZt2Zb5qmOunVzaKBYhGBa366QBgZdBLZNK7UDvBz';
-  try {
-    let txs = await provider.getTransactions(addr_contract);
-    let spentInvoices = (
-      await invoiceService.findInvoicesByTelegramId(telegram_id)
-    ).map((invoice) => invoice.tx_id);
-    txs = txs.filter(
-      (tx) =>
-        tx.in_msg.value > 0 &&
-        tx.in_msg.message == telegram_id &&
-        !spentInvoices.includes(tx.transaction_id.hash),
-    );
-    let sumPaid = 0;
-    txs.forEach(async (tx) => {
-      sumPaid += tx.in_msg.value / 1000000000;
-    });
-    if (sumPaid >= nextBoosterPrice)
-      txs.forEach(async (tx) => {
-        await invoiceService.addInvoice(telegram_id, tx.transaction_id.hash);
-      });
-    return sumPaid;
-  } catch (error) {
-    console.error('Error fetching transaction:', error.message);
-  }
-}
 
 @Injectable()
 export class ApiGameBoosterService {
   private logger = new Logger(ApiGameBoosterService.name);
+  private provider: HttpProvider;
+  private receiver_address: string;
   constructor(
+    private readonly configService: ConfigService,
     private readonly boosterService: BoosterService,
     private readonly userService: UserService,
     private readonly gameService: GameService,
     private readonly invoiceService: InvoiceService,
-  ) {}
+  ) {
+    this.provider = new TonWeb.HttpProvider(
+      this.configService.getOrThrow('TON_NETWORK_PROVIDER_URL'),
+      {
+        apiKey: this.configService.getOrThrow('TON_NETWORK_TOKEN'),
+      },
+    );
+    this.receiver_address = this.configService.getOrThrow(
+      'TON_NETWORK_RECEIVER_ADDRESS',
+    );
+  }
+
+  private async getNewlyPaidAmount(
+    invoiceService: InvoiceService,
+    telegram_id: string,
+    nextBoosterPrice: number,
+  ) {
+    try {
+      let txs = await this.provider.getTransactions(this.receiver_address);
+      const spentInvoices = (
+        await invoiceService.findInvoicesByTelegramId(telegram_id)
+      ).map((invoice) => invoice.tx_id);
+      txs = txs.filter(
+        (tx) =>
+          tx.in_msg.value > 0 &&
+          tx.in_msg.message == telegram_id &&
+          !spentInvoices.includes(tx.transaction_id.hash),
+      );
+      let sumPaid = 0;
+      txs.forEach(async (tx) => {
+        sumPaid += tx.in_msg.value / 1000000000;
+      });
+      if (sumPaid >= nextBoosterPrice)
+        txs.forEach(async (tx) => {
+          await invoiceService.addInvoice(telegram_id, tx.transaction_id.hash);
+        });
+      return sumPaid;
+    } catch (error) {
+      console.error('Error fetching transaction:', error.message);
+    }
+  }
 
   async getList() {
     const res: Record<string, unknown[]> = {};
@@ -177,7 +186,7 @@ export class ApiGameBoosterService {
       game.score -= nextBooster.price || 0;
       user.boosters.push(nextBooster);
     } else if (nextBooster.denom == 'ton') {
-      const tonAmount = await getNewlyPaidAmount(
+      const tonAmount = await this.getNewlyPaidAmount(
         this.invoiceService,
         user.telegram_id,
         nextBooster.price,

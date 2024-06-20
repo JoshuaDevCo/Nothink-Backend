@@ -107,7 +107,7 @@ export class ApiGameStateService {
     );
     this.logger.warn('------------');
     if (diff <= 0) return 0;
-    return Math.round(game.tap_value * game.multiplier * diff);
+    return Math.round((game.tap_value * game.multiplier * diff) / 2);
   }
 
   async getLatest(userId: string) {
