@@ -18,6 +18,7 @@ build:
     - echo TON_NETWORK_RECEIVER_ADDRESS=$TON_NETWORK_RECEIVER_ADDRESS >> .env
     - echo MONGODB_URI=$MONGODB_URI >> .env
     - echo TELEGRAM_TOKEN=$TELEGRAM_TOKEN >> .env
+    - echo BOOSTER_AUTOTAPPER_INACTIVITY_PERIOD=$BOOSTER_AUTOTAPPER_INACTIVITY_PERIOD >> .env
     - cat .env
     - docker build -t $IMAGE_NAME .
     - docker push $IMAGE_NAME

@@ -1,6 +1,13 @@
 export const CHALLENGES = {
   invite: [
     {
+      threshold: 1,
+      type: 'invite-1',
+      label: 'Invite 1 no-thinker',
+      text: '1 player invited by you have joined the world of no-thinkers! Claim your reward!',
+      reward: '500',
+    },
+    {
       threshold: 10,
       type: 'invite-10',
       label: 'Invite 10 no-thinkers',
