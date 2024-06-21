@@ -36,7 +36,7 @@ export class ApiGameBoosterService {
     this.receiver_address = this.configService.getOrThrow(
       'TON_NETWORK_RECEIVER_ADDRESS',
     );
-    this.logger.log('TON_NETWORK_RECEIVER_ADDRESS: ' + this.receiver_address);
+    this.logger.debug('TON_NETWORK_RECEIVER_ADDRESS: ' + this.receiver_address);
     this.provider.getBalance(this.receiver_address).then((balance) => {
       this.logger.debug('TON_NETWORK_RECEIVER_ADDRESS (balance): ' + balance);
     });
