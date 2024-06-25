@@ -5,5 +5,6 @@ import { BotService } from './bot.service';
 @Module({
   imports: [TelegrafModule],
   providers: [BotService],
+  exports: [BotService],
 })
 export class BotModule {}

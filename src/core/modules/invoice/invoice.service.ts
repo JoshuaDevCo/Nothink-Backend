@@ -11,11 +11,11 @@ export class InvoiceService {
     private readonly invoiceModel: Model<Invoice>,
   ) {}
 
-  findInvoicesByTelegramId(telegram_id: string) {
+  findInvoicesByTelegramId(telegram_id: number) {
     return this.invoiceModel.find({ telegram_id });
   }
 
-  addInvoice(telegram_id: string, tx_id: string) {
+  addInvoice(telegram_id: number, tx_id: string) {
     // TODO:
     // as i remember insertMany will throw error if collection empty or doesn't exsits
     try {

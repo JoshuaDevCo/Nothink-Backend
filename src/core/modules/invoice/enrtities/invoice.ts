@@ -5,7 +5,7 @@ import { User } from '../../auth/entities/user';
 @Schema()
 export class Invoice {
   @Prop()
-  telegram_id: string;
+  telegram_id: number;
 
   @Prop()
   tx_id: string;

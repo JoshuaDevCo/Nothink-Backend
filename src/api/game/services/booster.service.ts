@@ -44,7 +44,7 @@ export class ApiGameBoosterService {
 
   private async getNewlyPaidAmount(
     invoiceService: InvoiceService,
-    telegram_id: string,
+    telegram_id: number,
     nextBoosterPrice: number,
   ) {
     try {
