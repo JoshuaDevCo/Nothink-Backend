@@ -121,8 +121,9 @@ export class ApiGameStateService {
     // this.logger.debug(game);
 
     if (!game) {
+      const wasInvited = await this.inviteService.isInvited(user.id);
       return {
-        score: 100,
+        total_balance: wasInvited ? 1000 : 100,
         tap_value: 1,
         multiplier: 1,
         energy: 100,
