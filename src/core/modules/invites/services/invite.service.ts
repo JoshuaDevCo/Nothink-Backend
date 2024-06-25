@@ -2,13 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Invite } from '../entities/invite';
 import { Model } from 'mongoose';
-import { UserService } from '../../auth/modules/user/user.service';
 
 @Injectable()
 export class InviteService {
   constructor(
     @InjectModel(Invite.name) private readonly inviteModel: Model<Invite>,
-    private readonly userService: UserService,
   ) {}
 
   getCollection() {
