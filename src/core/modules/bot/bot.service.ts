@@ -47,7 +47,7 @@ export class BotService implements OnModuleInit {
           user.chat_id = chat_id;
           await user.save();
         }
-        invite = await this.inviteService.findInviteLink(user.id);
+        invite = await this.inviteService.createInviteLink(user.id);
       } catch (error) {
         this.logger.error(error);
       }

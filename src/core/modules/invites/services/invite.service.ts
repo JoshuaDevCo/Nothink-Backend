@@ -18,11 +18,14 @@ export class InviteService {
     return this.inviteModel.findOne({ from: userId });
   }
 
-  createInviteLink(userId: string) {
-    return new this.inviteModel({
-      from: userId,
-      accepted_by: [],
-    }).save();
+  async createInviteLink(userId: string) {
+    const invite = await this.findInviteLink(userId);
+    if (!invite)
+      return new this.inviteModel({
+        from: userId,
+        accepted_by: [],
+      }).save();
+    return invite;
   }
 
   async getInvited(userId: string): Promise<string[]> {
