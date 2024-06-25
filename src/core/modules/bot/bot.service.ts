@@ -34,7 +34,7 @@ export class BotService implements OnModuleInit {
       const chat_id = ctx.chat.id;
       const telegram_details = ctx.message.from;
       const telegram_id = ctx.message.from.id;
-      let inviteId;
+      let invite;
       try {
         let user = await this.userService.findUserByTelegramId(telegram_id);
         if (!user) {
@@ -47,7 +47,7 @@ export class BotService implements OnModuleInit {
           user.chat_id = chat_id;
           await user.save();
         }
-        inviteId = await this.inviteService.findInviteLink(user.id);
+        invite = await this.inviteService.findInviteLink(user.id);
       } catch (error) {
         this.logger.error(error);
       }
@@ -55,7 +55,7 @@ export class BotService implements OnModuleInit {
         parse_mode: 'MarkdownV2',
         reply_markup: {
           inline_keyboard: [
-            [{ text: 'Invite friends', url: makeInviteLink(inviteId) }],
+            [{ text: 'Invite friends', url: makeInviteLink(invite._id) }],
             [
               {
                 text: 'Play',
