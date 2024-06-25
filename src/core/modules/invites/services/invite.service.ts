@@ -28,7 +28,7 @@ export class InviteService {
     const invite = await this.inviteModel.findOne({ from: userId });
     const inviter = await this.inviteModel.findOne({ accepted_by: userId });
     return [
-      ...invite.accepted_by.map((id) => id.toString()),
+      ...(invite?.accepted_by || []).map((id) => id.toString()),
       userId,
       inviter?._id.toString(),
     ];
