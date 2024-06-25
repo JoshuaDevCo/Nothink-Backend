@@ -28,8 +28,10 @@ export class ApiStatService {
     return res[0]?.rank || 1;
   }
   async getInvidedRankTable(userId: string) {
+    this.logger.log(`User ID: ${userId}`);
     const ids = await this.inviteService.getInvited(userId);
     // table of leaders 1 - 100 + user place
+    this.logger.log(ids);
     const res = await this.userService.getInvidedRankTable(ids);
     // this.logger.debug(res);
     return res;

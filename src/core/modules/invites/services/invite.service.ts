@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Invite } from '../entities/invite';
 import { Model } from 'mongoose';
+import { ObjectId } from 'bson';
 
 @Injectable()
 export class InviteService {
@@ -26,11 +27,14 @@ export class InviteService {
 
   async getInvited(userId: string): Promise<string[]> {
     const invite = await this.inviteModel.findOne({ from: userId });
-    const inviter = await this.inviteModel.findOne({ accepted_by: userId });
+    const inviter = await this.inviteModel.findOne({
+      accepted_by: new ObjectId(userId),
+    });
+    console.log(inviter);
     return [
       ...(invite?.accepted_by || []).map((id) => id.toString()),
       userId,
-      inviter?._id.toString(),
+      inviter?.from.toString(),
     ];
   }
 
