@@ -25,7 +25,7 @@ export class ApiStatService {
     // table of leaders 1 - 100 + user place
     const res = await this.userService.getUserPlacement(userId);
     // this.logger.debug(res);
-    return res[0].rank;
+    return res[0]?.rank || 1;
   }
   async getInvidedRankTable(userId: string) {
     const ids = await this.inviteService.getInvited(userId);

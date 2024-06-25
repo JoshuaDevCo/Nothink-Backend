@@ -2,6 +2,7 @@ import { Body, Controller, Logger, Post } from '@nestjs/common';
 import { ApiAuthService } from '../services/api-auth.service';
 import { InviteService } from 'src/core/modules/invites/services/invite.service';
 import { isObjectIdOrHexString } from 'mongoose';
+import { BotService } from 'src/core/modules/bot/bot.service';
 
 @Controller('')
 export class ApiAuthController {
@@ -9,6 +10,7 @@ export class ApiAuthController {
   constructor(
     private readonly service: ApiAuthService,
     private readonly inviteService: InviteService,
+    private readonly botService: BotService,
   ) {}
   @Post('connect')
   async handleApiAuthConnect(
@@ -22,11 +24,18 @@ export class ApiAuthController {
       params.data.startParam &&
       isObjectIdOrHexString(params.data.startParam)
     ) {
-      this.logger.warn('Checking invite...');
+      this.logger.warn('Checking invite...', params.data.startParam);
       try {
-        await this.inviteService.acceptInvite(
+        const invite = await this.inviteService.acceptInvite(
           user._id.toString(),
           params.data.startParam,
+        );
+        await this.botService.sendMessageToUser(
+          invite.from,
+          `Congratulations! Your contact, ${
+            (user.telegram_details as any).firstName ||
+            user.telegram_details.username
+          }, has used your invite link, and both of you have earned 1,000 coins!🪙 Keep sharing your link to spread the word and earn even more rewards. 🚀`,
         );
       } catch (error) {
         this.logger.error(error);

@@ -32,7 +32,7 @@ export class InviteService {
     return [
       ...invite.accepted_by.map((id) => id.toString()),
       userId,
-      inviter._id.toString(),
+      inviter?._id.toString(),
     ];
   }
 
@@ -47,7 +47,6 @@ export class InviteService {
     if (alreadyAccepted) throw new Error('Cannot accept twice');
     const invite = await this.inviteModel.findOne({
       _id: inviteId,
-      accepted_by: userId,
     });
     if (!invite) throw new Error('Invite not found');
     if (userId === invite.from.toString())

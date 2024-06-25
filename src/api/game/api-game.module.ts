@@ -14,7 +14,6 @@ import { ApiGameChallengeController } from './controllers/challange.controller';
 import { InviteModule } from 'src/core/modules/invites/invite.module';
 import { ApiGameChallangeService } from './services/challange.service';
 import { InvoiceModule } from 'src/core/modules/invoice/invoice.module';
-import { BotModule } from 'src/core/modules/bot/bot.module';
 @Module({
   imports: [
     BoosterModule,
@@ -22,7 +21,6 @@ import { BotModule } from 'src/core/modules/bot/bot.module';
     ChallengeModule,
     InviteModule,
     InvoiceModule,
-    BotModule,
   ],
   controllers: [
     ApiGameBoosterController,

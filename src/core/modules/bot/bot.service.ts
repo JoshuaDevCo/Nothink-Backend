@@ -70,7 +70,7 @@ export class BotService implements OnModuleInit {
     if (!user) return;
     if (!user.chat_id) return;
     this.bot.telegram.sendMessage(user.chat_id, message, {
-      parse_mode: 'MarkdownV2',
+      parse_mode: 'Markdown',
     });
   }
 }

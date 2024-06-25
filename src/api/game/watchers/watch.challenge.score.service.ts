@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { GameService } from 'src/core/modules/game/game.service';
 import { UserService } from 'src/core/modules/auth/modules/user/user.service';
 import { ChallengeService } from 'src/core/modules/challange/challenge.service';
-import { IChallange } from '../types/challange.types';
 import { CHALLENGES } from '../constants/challenges';
 
 @Injectable()

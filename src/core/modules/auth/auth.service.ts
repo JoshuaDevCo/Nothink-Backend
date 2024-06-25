@@ -6,7 +6,7 @@ import { sign, verify } from 'jsonwebtoken';
 export class AuthService {
   private logger = new Logger(AuthService.name);
   protected secret: string;
-  constructor(private readonly userService: UserService) {
+  constructor() {
     this.secret = 'secret-token';
   }
   sign(data: string | object | Buffer) {
