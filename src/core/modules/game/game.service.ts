@@ -30,7 +30,7 @@ export class GameService {
     return this.gameModel.collection;
   }
 
-  addScore(_id: String, reward: number) {
+  addScore(_id: string, reward: number) {
     return this.gameModel.findOneAndUpdate(
       { _id },
       { $inc: { score: reward } },
@@ -38,11 +38,11 @@ export class GameService {
     );
   }
 
-  createGame(data: { score: number; clicks: number }) {
+  createGame(data: { score: number; clicks: number }, invited?: boolean) {
     const instance = new this.gameModel({
       energy: 100,
       max_energy: 100,
-      score: data.score || 0,
+      score: (invited ? 1000 : 100) + (data.score || 0),
       multiplier: 1,
       tap_value: 1,
     });

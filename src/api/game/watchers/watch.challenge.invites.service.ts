@@ -5,15 +5,16 @@ import { ChallengeService } from 'src/core/modules/challange/challenge.service';
 import { IChallange } from '../types/challange.types';
 import { InviteService } from 'src/core/modules/invites/services/invite.service';
 import { CHALLENGES } from '../constants/challenges';
+import { BotService } from 'src/core/modules/bot/bot.service';
 
 @Injectable()
 export class WatchInviteChallengeService {
   private logger = new Logger(WatchInviteChallengeService.name);
   constructor(
-    private readonly gameService: GameService,
     private readonly userService: UserService,
     private readonly challengeService: ChallengeService,
     private readonly inviteService: InviteService,
+    private readonly botService: BotService,
   ) {}
 
   async watch() {
@@ -46,6 +47,17 @@ export class WatchInviteChallengeService {
       this.logger.debug(detectedChallengeList);
 
       //   // Getting the list of challengs that the user have completed.
+      if (lastAccepter) {
+        const invited = await this.userService.findUserById(lastAccepter);
+        this.botService.sendMessageToUser(
+          user.id,
+          `Congratulations! Your contact, ${
+            (invited.telegram_details as any).firstName ||
+            invited.telegram_details.username
+          }, has used your invite link, and both of you have earned 1,000 coins!🪙 Keep sharing your link to spread the word and earn even more rewards. 🚀`,
+        );
+      }
+
       const completeChallenges =
         await this.challengeService.findChallengeByUserId(user.id);
 

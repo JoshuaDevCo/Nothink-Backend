@@ -35,6 +35,11 @@ export class InviteService {
       inviter._id.toString(),
     ];
   }
+
+  async isInvited(userId: string): Promise<boolean> {
+    const invite = this.inviteModel.findOne({ accepted_by: userId });
+    return Boolean(invite);
+  }
   async acceptInvite(userId: string, inviteId: string) {
     const alreadyAccepted = await this.inviteModel.findOne({
       accepted_by: userId,

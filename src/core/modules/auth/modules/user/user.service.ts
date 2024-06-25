@@ -12,7 +12,7 @@ export class UserService {
     @InjectModel(Booster.name) private readonly boosterModel: Model<Booster>,
   ) {}
 
-  createUser(telegram_id: string) {
+  createUser(telegram_id: number) {
     const instance = new this.userModel({
       telegram_id,
       boosters: [],
@@ -30,7 +30,7 @@ export class UserService {
     return this.userModel.findOne({ game_id });
   }
 
-  findUserByTelegramId(telegram_id: string) {
+  findUserByTelegramId(telegram_id: number) {
     return this.userModel.findOne({ telegram_id });
   }
   getTappers() {

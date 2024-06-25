@@ -5,11 +5,13 @@ import { Booster } from '../../booster/entities/booster';
 @Schema()
 export class User {
   @Prop()
-  telegram_id: string;
+  telegram_id: number;
   @Prop({ type: MongooseSchema.Types.Mixed })
-  telegram_details: { username: string };
+  telegram_details: { username?: string };
   @Prop()
   game_id: string;
+  @Prop()
+  chat_id?: number;
   @Prop([{ type: MongooseSchema.Types.ObjectId, ref: 'Booster' }])
   boosters: Booster[];
 }

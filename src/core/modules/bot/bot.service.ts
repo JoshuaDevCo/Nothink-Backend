@@ -1,7 +1,8 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectBot } from 'nestjs-telegraf';
 import { Markup, Telegraf } from 'telegraf';
 import { INVITE_TEXT } from './bot.constants';
+import { UserService } from '../auth/modules/user/user.service';
 
 const WELCOME_TEXT = `*Welcome to NO\\-THINK COIN:*
 
@@ -20,10 +21,32 @@ const makeInviteLink = (id: string) => {
 
 @Injectable()
 export class BotService implements OnModuleInit {
-  constructor(@InjectBot() private readonly bot: Telegraf) {}
+  private readonly logger = new Logger(BotService.name);
+  constructor(
+    @InjectBot() private readonly bot: Telegraf,
+    private readonly userService: UserService,
+  ) {}
   onModuleInit() {
-    this.bot.start((ctx) => {
+    this.bot.start(async (ctx) => {
       console.log('received start command');
+      const chat_id = ctx.chat.id;
+      const telegram_details = ctx.message.from;
+      const telegram_id = ctx.message.from.id;
+      try {
+        const user = await this.userService.findUserByTelegramId(telegram_id);
+        if (!user) {
+          const user = await this.userService.createUser(telegram_id);
+          user.telegram_details = { ...telegram_details };
+          user.chat_id = chat_id;
+          await user.save();
+        } else {
+          user.telegram_details = { ...telegram_details };
+          user.chat_id = chat_id;
+          await user.save();
+        }
+      } catch (error) {
+        this.logger.error(error);
+      }
       return ctx.sendMessage(WELCOME_TEXT, {
         parse_mode: 'MarkdownV2',
         reply_markup: {
@@ -39,6 +62,15 @@ export class BotService implements OnModuleInit {
           ],
         },
       });
+    });
+  }
+
+  async sendMessageToUser(userId: string, message: string) {
+    const user = await this.userService.findUserById(userId);
+    if (!user) return;
+    if (!user.chat_id) return;
+    this.bot.telegram.sendMessage(user.chat_id, message, {
+      parse_mode: 'MarkdownV2',
     });
   }
 }

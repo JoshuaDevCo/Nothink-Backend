@@ -29,8 +29,11 @@ export class ApiGameStateService {
     try {
       const user = await this.userService.findUserById(userId);
       if (!user) throw new NotFoundException('User not found');
+      const isUserInvited = await this.inviteService.isInvited(
+        user._id.toString(),
+      );
       if (!user.game_id) {
-        user.game_id = (await this.gameService.createGame(dto))
+        user.game_id = (await this.gameService.createGame(dto, isUserInvited))
           ._id as unknown as string;
         await user.save();
       }
