@@ -30,8 +30,9 @@ export class ApiAuthController {
           user._id.toString(),
           params.data.startParam,
         );
-        await this.botService.sendMessageToUser(
+        await this.botService.sendInviteUsedNotification(
           invite.from,
+          invite.id,
           `Congratulations! Your contact, ${
             (user.telegram_details as any).firstName ||
             user.telegram_details.username

@@ -3,6 +3,7 @@ import { InjectBot } from 'nestjs-telegraf';
 import { Markup, Telegraf } from 'telegraf';
 import { INVITE_TEXT } from './bot.constants';
 import { UserService } from '../auth/modules/user/user.service';
+import { InviteService } from '../invites/services/invite.service';
 
 const WELCOME_TEXT = `*Welcome to NO\\-THINK COIN:*
 
@@ -25,6 +26,7 @@ export class BotService implements OnModuleInit {
   constructor(
     @InjectBot() private readonly bot: Telegraf,
     private readonly userService: UserService,
+    private readonly inviteService: InviteService,
   ) {}
   onModuleInit() {
     this.bot.start(async (ctx) => {
@@ -32,10 +34,11 @@ export class BotService implements OnModuleInit {
       const chat_id = ctx.chat.id;
       const telegram_details = ctx.message.from;
       const telegram_id = ctx.message.from.id;
+      let inviteId;
       try {
-        const user = await this.userService.findUserByTelegramId(telegram_id);
+        let user = await this.userService.findUserByTelegramId(telegram_id);
         if (!user) {
-          const user = await this.userService.createUser(telegram_id);
+          user = await this.userService.createUser(telegram_id);
           user.telegram_details = { ...telegram_details };
           user.chat_id = chat_id;
           await user.save();
@@ -44,6 +47,7 @@ export class BotService implements OnModuleInit {
           user.chat_id = chat_id;
           await user.save();
         }
+        inviteId = await this.inviteService.findInviteLink(user.id);
       } catch (error) {
         this.logger.error(error);
       }
@@ -51,7 +55,7 @@ export class BotService implements OnModuleInit {
         parse_mode: 'MarkdownV2',
         reply_markup: {
           inline_keyboard: [
-            [{ text: 'Invite friends', url: makeInviteLink('test') }],
+            [{ text: 'Invite friends', url: makeInviteLink(inviteId) }],
             [
               {
                 text: 'Play',
@@ -65,12 +69,22 @@ export class BotService implements OnModuleInit {
     });
   }
 
-  async sendMessageToUser(userId: string, message: string) {
+  async sendInviteUsedNotification(
+    userId: string,
+    inviteId: string,
+    message: string,
+  ) {
     const user = await this.userService.findUserById(userId);
     if (!user) return;
     if (!user.chat_id) return;
     this.bot.telegram.sendMessage(user.chat_id, message, {
       parse_mode: 'Markdown',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: 'Invite friends', url: makeInviteLink(inviteId) }],
+          // [{ text: 'Read the rules', callback_data: 'Rules' }],
+        ],
+      },
     });
   }
 }
